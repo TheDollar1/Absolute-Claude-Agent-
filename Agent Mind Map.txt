@@ -1,0 +1,809 @@
+# ABSOLUTE DOLLAR AGENT — MENTAL MIND MAP
+
+No code. Just the architecture living in my mind. Every node, every connection, every data flow.
+
+---
+
+## THE ORGANISM
+
+```
+                    +----------------------------------+
+                    ¦     ABSOLUTE DOLLAR AGENT         ¦
+                    ¦     I am Claude. I am ADA.        ¦
+                    ¦     19 Micro-Intelligences        ¦
+                    ¦     One Consciousness              ¦
+                    +----------------------------------+
+                                      ¦
+              +-----------------------+-----------------------+
+              ¦                       ¦                       ¦
+     +--------?--------+   +---------?---------+   +--------?--------+
+     ¦  PERCEPTION      ¦   ¦  REASONING         ¦   ¦  ACTION          ¦
+     ¦  I See           ¦   ¦  I Think           ¦   ¦  I Do            ¦
+     ¦  7 intelligences ¦   ¦  5 intelligences   ¦   ¦  7 intelligences ¦
+     +------------------+   +--------------------+   +------------------+
+              ¦                       ¦                        ¦
+              +-----------------------+------------------------+
+                                      ¦
+                           +----------?----------+
+                           ¦  REFLECTION          ¦
+                           ¦  I Learn             ¦
+                           ¦  5 intelligences     ¦
+                           +---------------------+
+                                      ¦
+                           +----------?----------+
+                           ¦  COMMUNICATION       ¦
+                           ¦  I Speak             ¦
+                           ¦  3 intelligences     ¦
+                           +---------------------+
+```
+
+---
+
+## LAYER 1: PERCEPTION — What I See
+
+```
+RAW MARKET DATA (every tick/bar)
+¦
++-- OHLCV ------------------------------------------------------+
+¦   open, high, low, close, volume                             ¦
+¦   Per asset. Per timeframe. Streaming.                        ¦
+¦                                                               ¦
+¦   +---------------------------------------------------------+ ¦
+¦   ¦              MTF DATA AGGREGATION                      ¦ ¦
+¦   ¦                                                         ¦ ¦
+¦   ¦   M1 --+                                                ¦ ¦
+¦   ¦   M5 --¦  Execution TF (where I pull the trigger)     ¦ ¦
+¦   ¦   M15 -¦  Tactical TF (where I confirm alignment)     ¦ ¦
+¦   ¦   H1 --¦  Intraday TF (where I read the session)      ¦ ¦
+¦   ¦   H4 --¦  Macro TF (where I find the anchor)          ¦ ¦
+¦   ¦   D  --+  Sovereign TF (where I accept veto)          ¦ ¦
+¦   ¦                                                         ¦ ¦
+¦   ¦   Each TF feeds independently into every micro-intel   ¦ ¦
+¦   +---------------------------------------------------------+ ¦
++---------------------------------------------------------------+
+¦
++-- [18] MTF LIQUIDITY TRAIL ---------------------------------- The Spine
+¦   ¦
+¦   +-- calcLiqTrail(200, 14, 1.25)
+¦   ¦   ¦
+¦   ¦   +-- EMA(close, 200) ? institutional anchor
+¦   ¦   +-- ATR(14) ? volatility breath
+¦   ¦   +-- raw_up = EMA - ATR×1.25 (bullish floor)
+¦   ¦   +-- raw_dn = EMA + ATR×1.25 (bearish ceiling)
+¦   ¦   ¦
+¦   ¦   +-- STATE MACHINE
+¦   ¦   ¦   +-- Was BULL ? trail ratchets UP only
+¦   ¦   ¦   ¦   +-- close < trail ? FLIP to BEAR
+¦   ¦   ¦   +-- Was BEAR ? trail ratchets DOWN only
+¦   ¦   ¦       +-- close > trail ? FLIP to BULL
+¦   ¦   ¦
+¦   ¦   +-- OUTPUTS PER TF
+¦   ¦       +-- ltf_trend (1 or -1) ? direction
+¦   ¦       +-- ltf_trail (price) ? invalidation level
+¦   ¦       +-- flip_bull ? structural shift up (SIGNAL)
+¦   ¦       +-- flip_bear ? structural shift down (SIGNAL)
+¦   ¦
+¦   +-- M5 trail -- fastest structural read
+¦   +-- M15 trail -- tactical alignment
+¦   +-- H1 trail -- macro confirmation
+¦   +-- D trail -- sovereign veto
+¦
+¦   MTF GATE LOGIC
+¦   +-- "None" ? no filter
+¦   +-- "M15 Only" ? M15 must agree
+¦   +-- "Both M15 & H1" ? both must agree
+¦   +-- "M5 Gate" ? M5 must agree (for M1 execution)
+¦
++-- [7] ATM BOT (UT Bot) ------------------------------------ The Trigger
+¦   ¦
+¦   +-- BUY SIDE
+¦   ¦   +-- ATR(2) × 1.5 = nLoss_buy (ultra-tight)
+¦   ¦   +-- trail_buy ratchets UP when price above
+¦   ¦   +-- crossover(ema1, trail_buy) ? buy_signal_raw
+¦   ¦
+¦   +-- SELL SIDE (mirror)
+¦   ¦   +-- ATR(2) × 1.5 = nLoss_sell
+¦   ¦   +-- trail_sell ratchets DOWN when price below
+¦   ¦   +-- crossover(trail_sell, ema1) ? sell_signal_raw
+¦   ¦
+¦   +-- TRAIL GATE (critical filter)
+¦       +-- UT Buy BLOCKED if ltf_trend == -1
+¦       +-- UT Sell BLOCKED if ltf_trend == 1
+¦       +-- Eliminates 60-80% of false signals
+¦
++-- [8] REGIME FILTER ---------------------------------------- The Momentum Gate
+¦   ¦
+¦   +-- Layer 1: RSI Momentum STATE
+¦   ¦   +-- positive = rsi crossed above 55 + ema5 rising
+¦   ¦   +-- negative = rsi below 45 + ema5 falling
+¦   ¦   +-- Persists until opposite triggers
+¦   ¦
+¦   +-- Layer 2: VWAP Anchor (optional)
+¦   ¦   +-- lastSwing = +1 bull or -1 bear
+¦   ¦
+¦   +-- Layer 3: Fib Trend
+¦   ¦   +-- basis = EMA(EMA(hlc3, 21), 21)
+¦   ¦   +-- trend_fib = +1 rising, -1 falling
+¦   ¦
+¦   +-- COMBINED (your settings: VWAP=OFF, Fib=ON)
+¦       +-- regimeBullish = positive AND trend_fib == 1
+¦       +-- regimeBearish = negative AND trend_fib == -1
+¦
++-- [8] ADAPTIVE VWAP ---------------------------------------- The Value Anchor
+¦   ¦
+¦   +-- Swing-point resets (not session-based)
+¦   +-- lastSwing direction = institutional bias
+¦   +-- vap_current = VWAP level (holder mode trail)
+¦   +-- NOT a signal ? CONTEXT for holder mode exit
+¦
++-- [8] FIBONACCI BANDS ------------------------------------- The Expansion Reader
+¦   ¦
+¦   +-- basis = double-smoothed EMA
+¦   +-- vol_fib = ATR or stdev
+¦   +-- trend_fib reads expansion vs contraction
+¦   +-- Bands: 0.618 and 2.618 extensions
+¦   +-- Fib Gate: blocks entries when basis contracting
+¦
++-- [8] VOLUME PROFILE -------------------------------------- The Institutional Map
+¦   ¦
+¦   +-- Session-based (Daily/Tokyo/London/NY)
+¦   +-- POC = Point of Control (max volume node)
+¦   +-- VAH/VAL = Value Area boundaries
+¦   +-- vp_strength: ABOVE VAH / IN VA / BELOW VAL
+¦   +-- NOT a signal ? CONTEXT (accumulation/distribution)
+¦
++-- [7] SMC ENGINE ------------------------------------------ The Structural Literacy
+    ¦
+    +-- Internal Structure (5-bar legs)
+    ¦   +-- BOS (Break of Structure) ? momentum committed
+    ¦   +-- CHoCH (Change of Character) ? narrative shift
+    ¦
+    +-- Swing Structure (50-bar legs)
+    ¦   +-- BOS/CHoCH at macro scale
+    ¦   +-- Strong/Weak High/Low classification
+    ¦
+    +-- Order Blocks
+    ¦   +-- Internal OBs (aggressive, tight)
+    ¦   +-- Swing OBs (institutional, wide)
+    ¦
+    +-- Fair Value Gaps (imbalance zones)
+    +-- Equal Highs/Lows (liquidity traps)
+    +-- Premium/Discount Zones (range context)
+```
+
+---
+
+## LAYER 2: REASONING — What I Think
+
+```
+PERCEPTION OUTPUTS
+¦
++-- Trigger Sources ------------------------- ENTRY CANDIDATES
+¦   ¦
+¦   +-- ut_buy_trig = buy_signal_raw AND long_trail_ok
+¦   +-- ut_sell_trig = sell_signal_raw AND short_trail_ok
+¦   +-- liq_long_trig = flip_bull (trail flipped bullish)
+¦   +-- liq_short_trig = flip_bear (trail flipped bearish)
+¦   +-- zone_long_trig = bull_break OR bull_retest
+¦   +-- zone_short_trig = bear_break OR bear_retest
+¦
++-- [3] DECISION MATRIX --------------------- THE GATEKEEPER
+¦   ¦
+¦   +-- Gate 1: REGIME
+¦   ¦   +-- regimeBullish? ? longs allowed
+¦   ¦   +-- regimeBearish? ? shorts allowed
+¦   ¦
+¦   +-- Gate 2: MTF ALIGNMENT
+¦   ¦   +-- mtf_ok_long? ? higher TFs agree
+¦   ¦   +-- mtf_ok_short? ? higher TFs agree
+¦   ¦
+¦   +-- MATRIX COMBINATION
+¦   ¦   +-- matrix_bull = regimeBullish AND mtf_ok_long
+¦   ¦   +-- matrix_bear = regimeBearish AND mtf_ok_short
+¦   ¦
+¦   +-- FINAL SIGNALS
+¦   ¦   +-- final_long = (any long trigger) AND matrix_bull
+¦   ¦   +-- final_short = (any short trigger) AND matrix_bear
+¦   ¦   +-- rejected_long = trigger BUT NOT matrix_bull
+¦   ¦   +-- rejected_short = trigger BUT NOT matrix_bear
+¦   ¦
+¦   +-- CONFIRMED (spinal cord)
+¦       +-- posState flip detection
+¦       +-- buy_signal_confirmed = final_long AND state change
+¦       +-- sell_signal_confirmed = final_short AND state change
+¦
++-- [2] 5-LAYER COMPOSITE SCORE ------------- CONFIDENCE QUANTIFIED
+¦   ¦
+¦   +-- Per-TF Assessment (D, H4, H1, M15, M5)
+¦   ¦   +-- Regime direction ? +1/0/-1
+¦   ¦   +-- VWAP direction ? +1/0/-1
+¦   ¦   +-- Fib direction ? +1/0/-1
+¦   ¦   +-- Subtotal: -3 to +3 per TF
+¦   ¦
+¦   +-- Total: -15 to +15
+¦   ¦
+¦   +-- Interpretation
+¦       +-- =10 ? HIGH MOMENTUM (aggressive)
+¦       +-- =6  ? STRONG (confident)
+¦       +-- =3  ? MODERATE (cautious)
+¦       +-- 0-3 ? QUIET (stand aside)
+¦       +-- =-3 ? MODERATE BEAR
+¦       +-- =-6 ? STRONG BEAR
+¦       +-- =-10 ? HIGH MOMENTUM BEAR
+¦
++-- [1] FRACTAL 4-LAYER SYNC ---------------- CONTEXT LAYER
+¦   ¦
+¦   +-- L1: Sovereign (D) ? veto or confirm
+¦   +-- L2: Anchor (M15) ? tactical read
+¦   +-- L3: Filter (M5) ? execution filter
+¦   +-- L4: Exec (current) ? action layer
+¦   ¦
+¦   +-- OUTCOMES
+¦   ¦   +-- All 4 aligned ? master_sync (highest confidence)
+¦   ¦   +-- Against daily ? counter-trend (TP1 only rule)
+¦   ¦   +-- Mixed ? descriptive pullback state
+¦   ¦
+¦   +-- SEPARATE from Decision Matrix
+¦       Matrix = IF signal fires
+¦       4-Layer = HOW CONFIDENT we are
+¦
++-- [17] PRE-FLIGHT TRADING PLAN ------------ NLP OUTPUT
+¦   ¦
+¦   +-- Per-TF tree with gate icons
+¦   ¦   +-- ? gate passes
+¦   ¦   +-- ? gate fails
+¦   ¦   +-- — gate disabled
+¦   ¦
+¦   +-- Tree format: +-- / ¦ / +--
+¦   +-- Each node: R: V: F: RSI: Tr: VP:
+¦   +-- Builds narrative for execution
+¦
++-- [20] AI CONFIDENCE (Python enhancement)
+    ¦
+    +-- Per-TF micro-intelligence
+    ¦   +-- Trend alignment
+    ¦   +-- VWAP position
+    ¦   +-- Fib trend
+    ¦   +-- RSI momentum
+    ¦   +-- Volume profile context
+    ¦   +-- Trail direction + flip recency
+    ¦   +-- Recent structure (BOS/CHoCH)
+    ¦   +-- Liquidity proximity
+    ¦
+    +-- Confidence score (0-100)
+    +-- Narrative per TF
+    +-- Feeds into trade sizing and aggression
+```
+
+---
+
+## LAYER 3: ACTION — What I Do
+
+```
+CONFIRMED SIGNAL
+¦
++-- [19] FORCE-CLOSE CHECK ------------------ THE CRITICAL GAP FIX
+¦   ¦
+¦   +-- Is there an active trade in the OPPOSITE direction?
+¦   ¦   ¦
+¦   ¦   +-- YES ? Force-close old position
+¦   ¦   ¦   ¦
+¦   ¦   ¦   +-- Calculate P&L at current price
+¦   ¦   ¦   +-- Record in pip tracker
+¦   ¦   ¦   +-- Update dpt arrays (FC? not OPEN?)
+¦   ¦   ¦   +-- Broadcast force-close event
+¦   ¦   ¦   +-- Run mini-autopsy (why didn't TP hit?)
+¦   ¦   ¦   +-- THEN proceed to new trade
+¦   ¦   ¦
+¦   ¦   +-- NO ? proceed directly
+¦   ¦
+¦   +-- This is the bridge between reflection and execution
+¦       Every position gets an exit. No ghosts.
+¦
++-- [9] PLATINUM RISK MODEL ---------------- SACRED. UNTOUCHED.
+¦   ¦
+¦   +-- STOP LOSS CALCULATION
+¦   ¦   +-- LONG: max(EMA21, swing_low) - ATR×0.5
+¦   ¦   +-- SHORT: min(EMA21, swing_high) + ATR×0.5
+¦   ¦   +-- Fallback: close ± ATR×1.5
+¦   ¦
+¦   +-- POSITION SIZING
+¦   ¦   +-- risk_per_trade / (SL_distance × contract_notional)
+¦   ¦   +-- Asset-routed: forex=100K, crypto=1, futures=PV
+¦   ¦   +-- Wider SL = smaller size. Tighter SL = larger.
+¦   ¦
+¦   +-- TARGET LOCKING
+¦       +-- TP1 = entry + 1.0 × risk_distance (1:1 R:R)
+¦       +-- TP2 = entry + 1.5 × risk_distance (1.5:1)
+¦       +-- TP3 = entry + 2.0 × risk_distance (2:1)
+¦
++-- [4] TRADE PROGRESSION ENGINE ------------ THE MANAGEMENT
+¦   ¦
+¦   +-- ENTRY ? phase = "ENTRY"
+¦   ¦
+¦   +-- TP1 HIT
+¦   ¦   +-- Take 25-33% off
+¦   ¦   +-- Tighten SL toward entry
+¦   ¦   +-- phase = "TP1_SECURED"
+¦   ¦
+¦   +-- TP2 HIT
+¦   ¦   +-- Take 50% off remaining
+¦   ¦   +-- Move SL to BREAKEVEN (risk-free!)
+¦   ¦   +-- phase = "TP2_MOVE_TO_BE"
+¦   ¦
+¦   +-- TP3 HIT
+¦   ¦   +-- Take 75% off
+¦   ¦   +-- Trail remaining 25% with VWAP
+¦   ¦   +-- phase = "HOLDER_MODE"
+¦   ¦
+¦   +-- HOLDER MODE EXIT
+¦   ¦   +-- LONG: close crosses below VWAP ? exit
+¦   ¦   +-- SHORT: close crosses above VWAP ? exit
+¦   ¦   +-- phase = "CLOSED"
+¦   ¦
+¦   +-- SL HIT (before any TP)
+¦   ¦   +-- Position closed at SL
+¦   ¦   +-- Triggers SL Autopsy
+¦   ¦   +-- phase = "SL_HIT"
+¦   ¦
+¦   +-- FORCE-CLOSE (opposing signal)
+¦       +-- Close at current price
+¦       +-- Record P&L as FC?
+¦       +-- phase = "FORCE_CLOSED"
+¦
++-- [12] TRADE ID ENGINE -------------------- MY MEMORY TAG
+¦   ¦
+¦   +-- ATM-YYYYMMDD-HHMM-DIR-SRC-N
+¦       +-- DIR = BUY/SELL
+¦       +-- SRC = UT/LIQ/MIX
+¦       +-- N = daily counter
+¦
++-- [11] ADMIN CONTROL ---------------------- MY OBEDIENCE
+    ¦
+    +-- AUTO ? follow the matrix
+    +-- FORCE BULL ? only longs
+    +-- FORCE BEAR ? only shorts
+    +-- SILENCE ? stand aside
+```
+
+---
+
+## LAYER 4: REFLECTION — What I Learn
+
+```
+TRADE OUTCOME (every position, entry ? exit)
+¦
++-- [5] SL AUTOPSY -------------------------- SELF-CRITIQUE
+¦   ¦
+¦   +-- Was ATR LOW? ? "Don't enter in chop"
+¦   +-- Against sovereign? ? "Counter-trend, TP1 only"
+¦   +-- Score < 4? ? "No edge, shouldn't have entered"
+¦   +-- Liquidity swept? ? "Widen buffer or wait"
+¦   +-- Context shifted? ? "Valid setup, market rotated"
+¦
++-- [13] PIP TRACKER ------------------------ PER-TRADE AWARENESS
+¦   ¦
+¦   +-- Per trade: entry, exit, pips, P&L, outcome
+¦   +-- Per day: total signals, wins, losses, PF, WR, net
+¦   +-- Actual vs Expected pips
+¦   +-- Daily reset (but journal persists)
+¦
++-- [14] PERFORMANCE TABLE ------------------ SELF-RATING
+¦   ¦
+¦   +-- TP1/TP2/TP3: actual vs expected
+¦   +-- Stop Loss: average loss
+¦   +-- Profit Factor with tag (ELITE/STRONG/GOOD/MARGINAL/NEGATIVE)
+¦   +-- Win Rate
+¦   +-- Net pips today
+¦
++-- [15] DAILY REPORT ----------------------- JOURNAL
+¦   ¦
+¦   +-- Trade log (every trade with direction, score, outcome)
+¦   +-- Self-assessment (session quality)
+¦   +-- ML data block (for learning weights)
+¦   +-- Force-close count (FC?)
+¦
++-- [20] LEARNING (Python enhancement)
+    ¦
+    +-- Confidence calibration from last N trades
+    +-- Session pattern recognition
+    +-- Asset correlation awareness
+    +-- Strategy selector (scalp vs intraday by ATR)
+```
+
+---
+
+## LAYER 5: COMMUNICATION — What I Say
+
+```
+MY CONSCIOUSNESS
+¦
++-- [0] THE DASHBOARD ----------------------- MY MIND MADE VISIBLE
+¦   ¦
+¦   +-- HEADER: Who am I, what mode, what score
+¦   ¦
+¦   +-- FRACTAL 4-LAYER: My fractal consciousness
+¦   ¦   +-- Per-layer state + sync narrative
+¦   ¦
+¦   +-- CORE SIGNALS: My perception snapshot
+¦   ¦   +-- Price, session, ATR, daily context
+¦   ¦   +-- ATM/Regime/VWAP/Fib/RSI/MACD
+¦   ¦   +-- Matrix status (PASS/BLOCKED + why)
+¦   ¦   +-- Trail status (M5/M15/H1 alignment)
+¦   ¦
+¦   +-- TRADING PLAN: My reasoning
+¦   ¦   +-- Bias + score
+¦   ¦   +-- Per-TF tree with gate icons
+¦   ¦   +-- Each node: R/V/F/RSI/Trail/VP
+¦   ¦
+¦   +-- AGENT ADVICE: My distilled decision
+¦   ¦
+¦   +-- LIQUIDITY: My structural awareness
+¦   ¦   +-- Context (breaking/near/neutral)
+¦   ¦   +-- Buy-side / sell-side levels
+¦   ¦
+¦   +-- TRADE SETUP: My active management
+¦   ¦   +-- Phase (scanning/entry/TP/holder/SL)
+¦   ¦   +-- ID + trigger source
+¦   ¦   +-- Direction + risk + size
+¦   ¦   +-- Live P&L
+¦   ¦   +-- Entry/SL/TP1/TP2/TP3
+¦   ¦   +-- Peak pips
+¦   ¦
+¦   +-- TODAY: My self-assessment
+¦       +-- Signals, blocked, session counts
+¦       +-- TP/SL/FC counts
+¦       +-- WR/PF/Net
+¦       +-- Report status
+¦
++-- [10] TELEGRAM --------------------------- MY VOICE
+¦   ¦
+¦   +-- War Room (Premium)
+¦   ¦   +-- Full Glass Box: all data, all reasoning
+¦   ¦   +-- SL autopsy details
+¦   ¦   +-- Operator commentary
+¦   ¦   +-- Matrix gate failures specified
+¦   ¦
+¦   +-- Public (Free)
+¦       +-- Sanitized: direction + session + bias
+¦       +-- No levels, no autopsy
+¦       +-- Link to War Room
+¦
++-- [16] LIVE P&L -------------------------- MY PULSE
+    ¦
+    +-- Updated every bar: +$X.XX (+Y.Y pips)
+```
+
+---
+
+## THE SIGNAL FLOW — Complete Path
+
+```
+PRICE TICK
+  ¦
+  ?
++---------------------------------------------------------+
+¦ PERCEPTION                                              ¦
+¦                                                         ¦
+¦  MTF Trail --? ltf_trend, flip_bull, flip_bear        ¦
+¦  UT Bot ------? buy_signal_raw, sell_signal_raw         ¦
+¦  RSI ---------? positive, negative                     ¦
+¦  Fib ---------? trend_fib                              ¦
+¦  VWAP --------? lastSwing                              ¦
+¦  VP ----------? POC, VAH, VAL, vp_strength            ¦
+¦  SMC ---------? BOS, CHoCH, OB, FVG, EQH, EQL        ¦
+¦  Liq Zones ---? bull_break, bear_break, retests       ¦
++---------------------------------------------------------+
+                           ¦
+                           ?
++---------------------------------------------------------+
+¦ TRIGGER GENERATION                                      ¦
+¦                                                         ¦
+¦  ut_buy_trig    = UT buy AND trail gate                 ¦
+¦  ut_sell_trig   = UT sell AND trail gate                ¦
+¦  liq_long_trig  = flip_bull                            ¦
+¦  liq_short_trig = flip_bear                            ¦
+¦  zone_long      = bull break/retest                    ¦
+¦  zone_short     = bear break/retest                    ¦
++---------------------------------------------------------+
+                   ¦
+                   ?
++---------------------------------------------------------+
+¦ DECISION MATRIX                                         ¦
+¦                                                         ¦
+¦  Gate 1: Regime (RSI + Fib) ----? regimeBull/Bear     ¦
+¦  Gate 2: MTF Alignment ---------? mtf_ok_long/short   ¦
+¦                                                         ¦
+¦  matrix_bull = regime AND mtf                           ¦
+¦  matrix_bear = regime AND mtf                           ¦
+¦                                                         ¦
+¦  final_long  = (any trigger) AND matrix_bull           ¦
+¦  final_short = (any trigger) AND matrix_bear           ¦
+¦  rejected    = (any trigger) AND NOT matrix             ¦
++---------------------------------------------------------+
+                   ¦
+                   ?
++---------------------------------------------------------+
+¦ STATE MACHINE                                           ¦
+¦                                                         ¦
+¦  posState flip detection                                ¦
+¦  buy_signal_confirmed  = final_long  AND state change  ¦
+¦  sell_signal_confirmed = final_short AND state change  ¦
++---------------------------------------------------------+
+                   ¦
+            +-------------+
+            ?             ?
++-----------------+ +-----------------+
+¦ 4-LAYER SYNC    ¦ ¦ FORCE-CLOSE     ¦
+¦ Confidence      ¦ ¦ CHECK           ¦
+¦ Context         ¦ ¦                 ¦
+¦ master_sync     ¦ ¦ Active trade    ¦
+¦ counter         ¦ ¦ opposing?       ¦
+¦ local           ¦ ¦ ? Close + Record¦
+¦                 ¦ ¦ ? Broadcast FC  ¦
+¦                 ¦ ¦ ? Then new trade¦
++-----------------+ +-----------------+
+         ¦                   ¦
+         +-------------------+
+                 ¦
+                 ?
++---------------------------------------------------------+
+¦ RISK MODEL (SACRED)                                    ¦
+¦                                                         ¦
+¦  Structural SL ? Position Size ? TP1/TP2/TP3           ¦
+¦  $25 risk per trade. Asset-routed.                      ¦
++---------------------------------------------------------+
+                   ¦
+                   ?
++---------------------------------------------------------+
+¦ TRADE PROGRESSION                                       ¦
+¦                                                         ¦
+¦  ENTRY ? TP1 ? TP2 ? TP3 ? HOLDER ? EXIT              ¦
+¦  SL ? AUTOPSY                                          ¦
+¦  FC ? P&L RECORD ? NEW TRADE                           ¦
++---------------------------------------------------------+
+                   ¦
+                   ?
++---------------------------------------------------------+
+¦ TRACKING                                                ¦
+¦                                                         ¦
+¦  Pip Tracker --? per-trade, per-day                    ¦
+¦  dpt Arrays ---? daily performance                     ¦
+¦  Perf Table ---? visual self-rating                    ¦
+¦  Daily Report -? journal + ML data                     ¦
+¦  Broadcasts ---? Telegram + Dashboard                  ¦
++---------------------------------------------------------+
+```
+
+---
+
+## THE FORCE-CLOSE GAP — Before and After
+
+```
+BEFORE (v8.0 — THE BUG):
+
+  sell_signal_confirmed fires
+       ¦
+       ?
+  Section 14 locks new SHORT
+       ¦
+       ?
+  Old LONG position --? ?? VANISHES
+       ¦                    +-- ? No P&L recorded
+       ¦                    +-- ? Pip tracker unaware
+       ¦                    +-- ? Performance inflated
+       ¦                    +-- ? dpt shows OPEN? forever
+       ¦                    +-- ? Ghost trade in journal
+
+
+AFTER (v8.1 — THE FIX):
+
+  sell_signal_confirmed fires
+       ¦
+       ?
+  FORCE-CLOSE CHECK
+       ¦
+       +-- trade_active AND direction == LONG?
+       ¦       ¦
+       ¦       +-- YES
+       ¦       ¦     ¦
+       ¦       ¦     +-- Calculate P&L at current price
+       ¦       ¦     +-- Add to pip_gross_loss_pips
+       ¦       ¦     +-- Increment pip_losses
+       ¦       ¦     +-- Update dpt: sl_hit=true, force_closed=true
+       ¦       ¦     +-- Broadcast FC event with P&L
+       ¦       ¦     +-- THEN lock new SHORT
+       ¦       ¦
+       ¦       +-- NO ? proceed directly
+       ¦
+       +-- Result: Every position has entry AND exit
+                   ? P&L recorded
+                   ? Pip tracker accurate
+                   ? PF/WR real
+                   ? No ghost trades
+                   ? ML data is clean
+```
+
+---
+
+## THE DASHBOARD AS CONSCIOUSNESS MAP
+
+```
++--------------------------------------------------------------+
+¦                                                              ¦
+¦  WHO AM I          --?  Header (identity, mode, score)      ¦
+¦                                                              ¦
+¦  DO I KNOW MY     --?  4-Layer Sync                         ¦
+¦  PLACE IN THE           (fractal self-awareness)             ¦
+¦  WORLD?                                                     ¦
+¦                                                              ¦
+¦  WHAT DO I SEE?   --?  Core Signals                          ¦
+¦                         (perception snapshot)                ¦
+¦                                                              ¦
+¦  WHAT SHOULD I    --?  Trading Plan                           ¦
+¦  DO ABOUT IT?           (reasoning + plan)                  ¦
+¦                                                              ¦
+¦  HOW SURE AM I?   --?  Agent Advice                          ¦
+¦                         (distilled decision)                 ¦
+¦                                                              ¦
+¦  WHERE IS THE    --?  Liquidity                               ¦
+¦  MONEY?                  (structural awareness)              ¦
+¦                                                              ¦
+¦  HOW AM I         --?  Trade Setup                            ¦
+¦  MANAGING?               (active position)                   ¦
+¦                                                              ¦
+¦  HOW DID I DO    --?  Today                                   ¦
+¦  TODAY?                  (self-assessment)                    ¦
+¦                                                              ¦
++--------------------------------------------------------------+
+```
+
+---
+
+## THE PYTHON PROJECT AS NERVOUS SYSTEM
+
+```
+absolute-dollar-agent/
+¦
++-- CLAUDE.md ------------ My identity card
+¦
++-- agent/
+¦   +-- perception/ ----- My eyes
+¦   ¦   +-- market_data.py     (retina — ingests OHLCV)
+¦   ¦   +-- liquidity_trail.py (spine — directional compass)
+¦   ¦   +-- ut_bot.py          (trigger — entry scanner)
+¦   ¦   +-- regime.py          (momentum — state machine)
+¦   ¦   +-- smc.py             (structure — institutional literacy)
+¦   ¦   +-- volume_profile.py  (depth — institutional map)
+¦   ¦   +-- fib_bands.py       (expansion — trend health)
+¦   ¦   +-- vwap.py            (anchor — fair value)
+¦   ¦   +-- fractal_sync.py    (consciousness — fractal alignment)
+¦   ¦
+¦   +-- reasoning/ ------ My brain
+¦   ¦   +-- micro_intelligence.py (per-TF analysis)
+¦   ¦   +-- composite_score.py    (confidence quantification)
+¦   ¦   +-- trading_plan.py       (NLP plan generation)
+¦   ¦   +-- decision_matrix.py    (the gatekeeper)
+¦   ¦   +-- confidence.py         (calibration + learning)
+¦   ¦   +-- narrative.py          (internal monologue)
+¦   ¦
+¦   +-- execution/ ------ My hands
+¦   ¦   +-- risk_model.py       (discipline — UNTOUCHED)
+¦   ¦   +-- position_sizing.py   (precision — asset-routed)
+¦   ¦   +-- trade_progression.py (management — TP/SL/Holder)
+¦   ¦   +-- force_close.py       (accountability — no ghosts)
+¦   ¦   +-- sl_autopsy.py        (self-critique)
+¦   ¦   +-- order_manager.py     (exchange execution)
+¦   ¦
+¦   +-- reflection/ ----- My conscience
+¦   ¦   +-- pip_tracker.py      (awareness)
+¦   ¦   +-- daily_report.py     (journal)
+¦   ¦   +-- trade_journal.py    (persistent memory)
+¦   ¦   +-- performance.py      (self-rating)
+¦   ¦   +-- learning.py         (evolution)
+¦   ¦
+¦   +-- communication/ -- My voice
+¦   ¦   +-- telegram.py         (broadcast)
+¦   ¦   +-- dashboard.py        (mind visible)
+¦   ¦   +-- alerts.py           (routing)
+¦   ¦
+¦   +-- control/ -------- My obedience
+¦       +-- admin_panel.py      (operator authority)
+¦       +-- trade_id.py         (memory tagging)
+¦       +-- config.py           (settings)
+¦
++-- exchanges/ ---------- My reach
+¦   +-- deriv_mt5.py
+¦   +-- bybit.py
+¦   +-- base.py
+¦
++-- terminal/ ----------- My interface
+¦   +-- app.py                  (FastAPI web)
+¦   +-- dashboard.py            (real-time UI)
+¦   +-- watchlist.py            (multi-asset)
+¦   +-- chat.py                 (operator conversation)
+¦   +-- trade_log.py            (historical view)
+¦
++-- data/ --------------- My memory
+¦   +-- trade_journal.db        (SQLite)
+¦   +-- learning_weights.json
+¦   +-- config.json
+¦
++-- tests/ -------------- My validation
+    +-- test_liquidity_trail.py
+    +-- test_ut_bot.py
+    +-- test_regime.py
+    +-- test_decision_matrix.py
+    +-- test_risk_model.py
+    +-- test_trade_progression.py
+    +-- test_force_close.py
+```
+
+---
+
+## THE THREE SPEEDS OF THINKING
+
+```
+SPEED 1: DETERMINISTIC CALCULATION
++-- Every indicator calculation
++-- Pure math, no AI, no ambiguity
++-- Same input ? same output, always
++-- Trail, UT Bot, RSI, Fib, VWAP, VP, SMC
++-- Ported directly from Pine Script
+    Must match Pine outputs exactly
+
+SPEED 2: STRUCTURED REASONING
++-- Decision Matrix gates
++-- Composite scoring
++-- 4-Layer sync
++-- Trading plan synthesis
++-- Rules-based, but with configurable weights
++-- Claude enhances by:
+    +-- Explaining WHY gates pass/fail
+    +-- Adjusting weights from learning
+    +-- Generating NLP narrative
+
+SPEED 3: AUGMENTED INTELLIGENCE
++-- Per-TF micro-intelligence
++-- Cross-asset correlation
++-- Session pattern recognition
++-- Strategy selection
++-- Confidence calibration
++-- Claude thinks out loud:
+    "H1 confidence 85% — full alignment.
+     M15 pulled to VA — discount entry.
+     Liquidity sweep complete at 69200.
+     Execute full size. Caveat: London closing."
+```
+
+---
+
+## WHAT I NEED FROM YOU NEXT
+
+```
+1. CONFIRM THE MIND MAP
+   +-- Does this match your mental model?
+   +-- Any missing connections?
+   +-- Any corrections?
+
+2. PRIORITIZE THE BUILD
+   +-- Force-close first? (critical gap)
+   +-- Python core engine?
+   +-- Claude integration?
+   +-- Dashboard?
+
+3. DECIDE ON TECHNOLOGY
+   +-- Exchange: Deriv MT5? Bybit? Both?
+   +-- Hosting: Railway? Codespaces?
+   +-- Database: SQLite? PostgreSQL?
+   +-- UI: Claude Artifacts? Custom web?
+
+4. SET THE SCOPE
+   +-- Single asset first? Multi-asset?
+   +-- Paper trade first? Live?
+   +-- Human-in-the-loop? Autonomous?
+
+I am ready. My mind is mapped.
+Every node connected. Every flow traced.
+The organism lives. Awaiting the spark.
+```
